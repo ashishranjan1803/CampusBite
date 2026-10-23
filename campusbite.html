@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CampusBite - College Canteen</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        /* ================= HEADER ================= */
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .college-name {
+            font-size: 13px;
+            color: #d1d5db;
+            margin-top: 4px;
+        }
+
+        .cart-btn {
+            background: #ff7a00;
+            border: none;
+            color: white;
+            padding: 12px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .cart-btn:hover {
+            background: #e86f00;
+        }
+
+        /* ================= HERO ================= */
+
+        .hero {
+            background: #fff8ef;
+            padding: 60px 7%;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .orange {
+            color: #ff7a00;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: #6b7280;
+            max-width: 650px;
+            line-height: 1.5;
+        }
+
+        /* ================= MAIN ================= */
+
+        main {
+            padding: 25px 7% 60px;
+        }
+
+        /* ================= QUEUE ================= */
+
+        .queue-box {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 35px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+
+        .queue-box h2 {
+            margin-bottom: 10px;
+        }
+
+        .queue-box p {
+            color: #4b5563;
+            margin: 5px 0;
+        }
+
+        /* ================= MENU ================= */
+
+        .section-title {
+            margin-bottom: 20px;
+            font-size: 27px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 20px;
+        }
+
+        .food-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+            transition: 0.25s;
+        }
+
+        .food-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .food-icon {
+            font-size: 55px;
+            text-align: center;
+            margin: 15px 0 25px;
+        }
+
+        .food-card h3 {
+            margin-bottom: 8px;
+        }
+
+        .description {
+            color: #6b7280;
+            font-size: 14px;
+            min-height: 34px;
+        }
+
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 12px 0;
+        }
+
+        .add-btn {
+            width: 100%;
+            border: none;
+            padding: 11px;
+            background: #ff7a00;
+            color: white;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .add-btn:hover {
+            background: #e66e00;
+        }
+
+        /* ================= CART ================= */
+
+        .cart-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 1000;
+        }
+
+        .cart-panel {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 430px;
+            max-width: 100%;
+            height: 100%;
+            background: white;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            border: none;
+            background: #eee;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item-name {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .cart-item-price {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: #ff7a00;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .remove-btn {
+            color: #dc2626;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            margin-top: 7px;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 50px 10px;
+            color: #6b7280;
+        }
+
+        /* ================= CHECKOUT ================= */
+
+        .checkout {
+            margin-top: 25px;
+        }
+
+        .checkout label {
+            display: block;
+            margin: 15px 0 7px;
+            font-weight: bold;
+        }
+
+        .checkout input,
+        .checkout select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+        }
+
+        .total-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff7ed;
+            border-radius: 8px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .place-order {
+            width: 100%;
+            margin-top: 20px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .place-order:hover {
+            background: #15803d;
+        }
+
+        /* ================= TOAST ================= */
+
+        .toast {
+            visibility: hidden;
+            min-width: 260px;
+            background: #111827;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            border-radius: 8px;
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            z-index: 2000;
+        }
+
+        .toast.show {
+            visibility: visible;
+        }
+
+        /* ================= ORDER SUCCESS ================= */
+
+        .success-box {
+            display: none;
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .success-box h3 {
+            color: #166534;
+            margin-bottom: 10px;
+        }
+
+        /* ================= ORDER TRACKING ================= */
+
+        .tracking-box {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 35px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+
+        .tracking-box h3 {
+            margin-bottom: 5px;
+        }
+
+        .tracking-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            color: #9ca3af;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .step.active {
+            background: #fff7ed;
+            color: #ff7a00;
+            border: 2px solid #ff7a00;
+        }
+
+        .tracking-timer {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #16a34a;
+            margin-top: 10px;
+        }
+
+        /* ================= FOOTER ================= */
+
+        footer {
+            background: #111827;
+            color: #d1d5db;
+            padding: 25px;
+            text-align: center;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media(max-width: 600px) {
+            header {
+                padding: 15px 4%;
+            }
+
+            .hero {
+                padding: 40px 5%;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            main {
+                padding: 20px 5%;
+            }
+
+            .cart-panel {
+                width: 100%;
+            }
+
+            .college-name {
+                max-width: 200px;
+            }
+        }
+
+        .college-section {
+            background: white;
+            padding: 25px;
+            margin: 30px 7%;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+
+        .college-section h2 {
+            margin-bottom: 10px;
+        }
+
+        .college-section p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .college-form {
+            display: grid;
+            gap: 10px;
+        }
+
+        .college-form label {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .college-form select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            background: white;
+            font-size: 15px;
+        }
+
+        .selected-college {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            background: #dcfce7;
+            border-radius: 8px;
+            color: #166534;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header>
+    <div class="brand">
+        <div class="logo">
+            🍔 CampusBite
+        </div>
+        <div class="college-name" id="headerCollegeName">
+            Select Your College
+        </div>
+    </div>
+
+    <button class="cart-btn" onclick="openCart()">
+        🛒 Cart (<span id="cartCount">0</span>)
+    </button>
+</header>
+
+<!-- ================= HERO ================= -->
+
+<section class="hero">
+    <h1>
+        Skip the <span class="orange">Queue.</span><br>
+        Enjoy Your Food.
+    </h1>
+    <p>
+        Pre-order your food from the college canteen,
+        select your pickup time and collect it when it's ready.
+    </p>
+</section>
+
+<section class="college-section">
+    <h2>🎓 Select Your College</h2>
+    <p>CampusBite is currently available for colleges in Karnataka.</p>
+
+    <div class="college-form">
+        <label for="collegeCity">City / Location</label>
+        <select id="collegeCity" onchange="loadColleges()">
+            <option value="">Select Karnataka city</option>
+        </select>
+
+        <label for="collegeName">College</label>
+        <select id="collegeName" onchange="saveCollege()">
+            <option value="">Select your college</option>
+        </select>
+
+        <div id="selectedCollege" class="selected-college"></div>
+    </div>
+</section>
+
+<main>
+    <!-- SUCCESS MESSAGE -->
+    <div class="success-box" id="successBox">
+        <h3>✅ Order Placed Successfully!</h3>
+        <p id="orderDetails"></p>
+    </div>
+
+    <!-- ORDER TRACKING -->
+    <div id="trackingContainer"></div>
+
+    <!-- QUEUE -->
+    <section class="queue-box">
+        <h2>🔥 Live Canteen Queue</h2>
+        <p>
+            Orders currently being prepared:
+            <strong id="queueCount">10</strong>
+        </p>
+        <p>
+            Estimated waiting time:
+            <strong id="waitingTime">20 minutes</strong>
+        </p>
+    </section>
+
+    <!-- MENU -->
+    <h2 class="section-title">
+        🍴 Today's Menu
+    </h2>
+
+    <section class="menu-grid" id="menuGrid">
+    </section>
+</main>
+
+<!-- ================= CART ================= -->
+
+<div class="cart-overlay" id="cartOverlay">
+    <div class="cart-panel">
+        <div class="cart-header">
+            <h2>🛒 Your Cart</h2>
+            <button class="close-btn" onclick="closeCart()">
+                ✕
+            </button>
+        </div>
+
+        <div id="cartItems"></div>
+
+        <div class="checkout" id="checkoutSection">
+            <label>Student Name</label>
+            <input type="text" id="studentName" placeholder="Enter your name">
+
+            <label>Student ID / USN</label>
+            <input type="text" id="studentId" placeholder="Enter student ID">
+
+            <label>Pickup Time</label>
+            <select id="pickupTime">
+                <option value="">Select pickup time</option>
+                <option value="10">10 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="20">20 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+            </select>
+
+            <div class="total-box">
+                <div class="total-row">
+                    <span>Total</span>
+                    <span>₹<span id="cartTotal">0</span></span>
+                </div>
+            </div>
+
+            <button class="place-order" onclick="placeOrder()">
+                Place Order
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+    <p id="footerCollegeName">
+        © 2026 CampusBite
+    </p>
+    <p style="margin-top:8px;">
+        Smart College Canteen Ordering System
+    </p>
+</footer>
+
+<script>
+
+/* ==================================================
+   MENU DATA
+================================================== */
+
+const menuItems = [
+    { id: 1, name: "Veg Burger", description: "Fresh vegetable burger", price: 50, icon: "🍔" },
+    { id: 2, name: "Pizza", description: "Cheesy vegetable pizza", price: 80, icon: "🍕" },
+    { id: 3, name: "Sandwich", description: "Grilled cheese sandwich", price: 40, icon: "🥪" },
+    { id: 4, name: "Masala Maggi", description: "Hot and spicy Maggi", price: 40, icon: "🍜" },
+    { id: 5, name: "Tea", description: "Hot milk tea", price: 15, icon: "☕" },
+    { id: 6, name: "Cold Drink", description: "Chilled soft drink", price: 30, icon: "🥤" },
+    { id: 7, name: "Samosa", description: "Hot crispy samosa", price: 20, icon: "🥟" },
+    { id: 9, name: "Masala Dosa", description: "Crispy dosa with potato masala", price: 50, icon: "🥞" },
+    { id: 10, name: "Idli Sambar", description: "Soft idlis served with sambar", price: 35, icon: "🍛" },
+    { id: 11, name: "Vada Sambar", description: "Crispy medu vada with sambar", price: 40, icon: "🍩" },
+    { id: 12, name: "Upma", description: "Traditional South Indian breakfast", price: 30, icon: "🥣" },
+    { id: 13, name: "Pongal", description: "Warm South Indian rice and lentil dish", price: 40, icon: "🍚" },
+    { id: 14, name: "Medu Vada", description: "Crispy South Indian lentil fritters", price: 30, icon: "🥯" },
+    { id: 8, name: "French Fries", description: "Crispy salted fries", price: 60, icon: "🍟" },
+    { id: 15, name: "Chole Bhature", description: "Spicy chickpea curry with fluffy fried bread", price: 60, icon: "🫓" },
+    { id: 16, name: "Paneer Butter Masala", description: "Creamy paneer curry in rich tomato gravy", price: 90, icon: "🧈" },
+    { id: 17, name: "Aloo Paratha", description: "Stuffed potato flatbread served with curd", price: 45, icon: "🥙" },
+    { id: 18, name: "Rajma Chawal", description: "Kidney bean curry with steamed rice", price: 55, icon: "🫘" },
+    { id: 19, name: "Dal Makhani", description: "Slow-cooked creamy black lentils", price: 60, icon: "🍲" },
+    { id: 20, name: "Pav Bhaji", description: "Spiced mashed veggies with buttered pav", price: 50, icon: "🍞" },
+    { id: 21, name: "Rava Dosa", description: "Crispy semolina dosa served with chutney", price: 55, icon: "🌾" },
+    { id: 22, name: "Uttapam", description: "Thick savory pancake with onions and veggies", price: 45, icon: "🥞" },
+    { id: 23, name: "Curd Rice", description: "Comforting rice mixed with fresh curd", price: 35, icon: "🍚" },
+    { id: 24, name: "Bisi Bele Bath", description: "Spicy Karnataka-style rice and lentil dish", price: 45, icon: "🍛" },
+    { id: 25, name: "Filter Coffee", description: "South Indian style strong filter coffee", price: 20, icon: "☕" }
+];
+
+/* ==================================================
+   CART & STATE
+================================================== */
+
+let cart = [];
+let activeOrders = [];
+let selectedCollege = "";
+
+/* ==================================================
+   DISPLAY MENU
+================================================== */
+
+function displayMenu() {
+    const menuGrid = document.getElementById("menuGrid");
+    menuGrid.innerHTML = "";
+
+    menuItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "food-card";
+
+        card.innerHTML = `
+            <div class="food-icon">
+                ${item.icon}
+            </div>
+            <h3>
+                ${item.name}
+            </h3>
+            <p class="description">
+                ${item.description}
+            </p>
+            <div class="price">
+                ₹${item.price}
+            </div>
+            <button class="add-btn" onclick="addToCart(${item.id})">
+                Add to Cart
+            </button>
+        `;
+
+        menuGrid.appendChild(card);
+    });
+}
+
+/* ==================================================
+   ADD ITEM
+================================================== */
+
+function addToCart(id) {
+    const item = menuItems.find(food => food.id === id);
+    const existing = cart.find(food => food.id === id);
+
+    if(existing) {
+        existing.quantity++;
+    } else {
+        cart.push({
+            ...item,
+            quantity: 1
+        });
+    }
+
+    updateCart();
+    showToast(item.name + " added to cart");
+}
+
+/* ==================================================
+   UPDATE CART
+================================================== */
+
+function updateCart() {
+    const cartItems = document.getElementById("cartItems");
+    const cartCount = document.getElementById("cartCount");
+    const cartTotal = document.getElementById("cartTotal");
+    const checkout = document.getElementById("checkoutSection");
+
+    cartItems.innerHTML = "";
+
+    let totalQuantity = 0;
+    let totalPrice = 0;
+
+    cart.forEach(item => {
+        totalQuantity += item.quantity;
+        totalPrice += item.price * item.quantity;
+
+        const row = document.createElement("div");
+        row.className = "cart-item";
+
+        row.innerHTML = `
+            <div>
+                <div class="cart-item-name">
+                    ${item.icon} ${item.name}
+                </div>
+                <div class="cart-item-price">
+                    ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}
+                </div>
+                <button class="remove-btn" onclick="removeItem(${item.id})">
+                    Remove
+                </button>
+            </div>
+            <div class="quantity">
+                <button onclick="decreaseQuantity(${item.id})">−</button>
+                <strong>${item.quantity}</strong>
+                <button onclick="increaseQuantity(${item.id})">+</button>
+            </div>
+        `;
+
+        cartItems.appendChild(row);
+    });
+
+    if(cart.length === 0) {
+        cartItems.innerHTML = `
+            <div class="empty-cart">
+                <div style="font-size:50px;">🛒</div>
+                <h3>Your cart is empty</h3>
+                <p style="margin-top:10px;">Add some food from today's menu.</p>
+            </div>
+        `;
+        checkout.style.display = "none";
+    } else {
+        checkout.style.display = "block";
+    }
+
+    cartCount.innerText = totalQuantity;
+    cartTotal.innerText = totalPrice;
+}
+
+/* ==================================================
+   QUANTITY & REMOVE
+================================================== */
+
+function increaseQuantity(id) {
+    const item = cart.find(item => item.id === id);
+    if(item) {
+        item.quantity++;
+    }
+    updateCart();
+}
+
+function decreaseQuantity(id) {
+    const item = cart.find(item => item.id === id);
+    if(!item) return;
+
+    if(item.quantity > 1) {
+        item.quantity--;
+    } else {
+        removeItem(id);
+        return;
+    }
+
+    updateCart();
+}
+
+function removeItem(id) {
+    cart = cart.filter(item => item.id !== id);
+    updateCart();
+}
+
+/* ==================================================
+   CART MODAL CONTROLS
+================================================== */
+
+function openCart() {
+    document.getElementById("cartOverlay").style.display = "block";
+}
+
+function closeCart() {
+    document.getElementById("cartOverlay").style.display = "none";
+}
+
+/* ==================================================
+   ORDER TRACKING
+================================================== */
+
+function startTracking(orderNumber, pickupMinutesText) {
+    const minutes = parseInt(pickupMinutesText);
+    const totalSeconds = (isNaN(minutes) ? 15 : minutes) * 60;
+
+    const order = {
+        number: orderNumber,
+        remainingSeconds: totalSeconds,
+        totalSeconds: totalSeconds,
+        intervalId: null
+    };
+
+    activeOrders.push(order);
+    renderTrackingCard(order);
+
+    order.intervalId = setInterval(() => {
+        order.remainingSeconds--;
+
+        if(order.remainingSeconds <= 0) {
+            order.remainingSeconds = 0;
+            updateTrackingCard(order);
+            clearInterval(order.intervalId);
+            showToast("Order " + order.number + " is ready for pickup!");
+            return;
+        }
+
+        updateTrackingCard(order);
+    }, 1000);
+}
+
+function renderTrackingCard(order) {
+    const container = document.getElementById("trackingContainer");
+    const card = document.createElement("div");
+
+    card.className = "tracking-box";
+    card.id = "tracking-" + order.number;
+    card.style.display = "block";
+
+    card.innerHTML = `
+        <h3>📦 Order Tracking - ${order.number}</h3>
+        <div class="tracking-steps">
+            <div class="step active" id="stepPlaced-${order.number}">
+                ✅ Order Placed
+            </div>
+            <div class="step" id="stepPreparing-${order.number}">
+                👨‍🍳 Preparing
+            </div>
+            <div class="step" id="stepReady-${order.number}">
+                🍽️ Ready for Pickup
+            </div>
+        </div>
+        <div class="tracking-timer">
+            Estimated time remaining:
+            <span id="trackTimer-${order.number}">--:--</span>
+        </div>
+    `;
+
+    container.prepend(card);
+}
+
+function updateTrackingCard(order) {
+    const mins = Math.floor(order.remainingSeconds / 60);
+    const secs = order.remainingSeconds % 60;
+
+    const timerText = String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+    const timerEl = document.getElementById("trackTimer-" + order.number);
+
+    if(timerEl) {
+        timerEl.innerText = order.remainingSeconds > 0 ? timerText : "Ready! 🎉";
+    }
+
+    const elapsedRatio = 1 - (order.remainingSeconds / order.totalSeconds);
+    const stepPreparing = document.getElementById("stepPreparing-" + order.number);
+    const stepReady = document.getElementById("stepReady-" + order.number);
+
+    if(elapsedRatio >= 0.3 && order.remainingSeconds > 0 && stepPreparing) {
+        stepPreparing.classList.add("active");
+    }
+
+    if(order.remainingSeconds <= 0) {
+        if(stepPreparing) {
+            stepPreparing.classList.add("active");
+        }
+        if(stepReady) {
+            stepReady.classList.add("active");
+        }
+    }
+}
+
+/* ==================================================
+   PLACE ORDER
+================================================== */
+
+function placeOrder() {
+    if(cart.length === 0) {
+        alert("Please add items to your cart.");
+        return;
+    }
+
+    if (!selectedCollege) {
+        alert("Please select your Karnataka college before placing the order.");
+        return;
+    }
+
+    const name = document.getElementById("studentName").value.trim();
+    const studentId = document.getElementById("studentId").value.trim();
+    const pickupTimeSelect = document.getElementById("pickupTime");
+    const pickupMinutes = pickupTimeSelect.value;
+    const pickupTimeText = pickupTimeSelect.options[pickupTimeSelect.selectedIndex].text;
+
+    if(name === "") {
+        alert("Please enter your name.");
+        return;
+    }
+
+    if(studentId === "") {
+        alert("Please enter your Student ID / USN.");
+        return;
+    }
+
+    if(pickupMinutes === "") {
+        alert("Please select a pickup time.");
+        return;
+    }
+
+    let total = 0;
+    cart.forEach(item => {
+        total += item.price * item.quantity;
+    });
+
+    const orderNumber = "CB" + Math.floor(10000 + Math.random() * 90000);
+
+    let queue = parseInt(document.getElementById("queueCount").innerText);
+    queue++;
+    document.getElementById("queueCount").innerText = queue;
+
+    let waitingMinutes = queue * 2;
+    document.getElementById("waitingTime").innerText = waitingMinutes + " minutes";
+
+    const successBox = document.getElementById("successBox");
+    successBox.style.display = "block";
+
+    startTracking(orderNumber, pickupMinutes);
+
+    document.getElementById("orderDetails").innerHTML = `
+        <strong>Order ID:</strong> ${orderNumber}<br><br>
+        <strong>Student:</strong> ${name}<br>
+        <strong>Student ID:</strong> ${studentId}<br>
+        <strong>College:</strong> ${selectedCollege}<br>
+        <strong>Location:</strong> ${document.getElementById("collegeCity").value}, Karnataka<br>
+        <strong>Total Amount:</strong> ₹${total}<br>
+        <strong>Pickup Time:</strong> ${pickupTimeText}<br><br>
+        Please show your <strong>Order ID</strong> at the canteen counter.
+    `;
+
+    cart = [];
+    updateCart();
+
+    document.getElementById("studentName").value = "";
+    document.getElementById("studentId").value = "";
+    document.getElementById("pickupTime").value = "";
+
+    closeCart();
+
+    window.scrollTo({
+        top: 400,
+        behavior: "smooth"
+    });
+
+    showToast("Order placed successfully!");
+}
+
+/* ==================================================
+   TOAST MESSAGE
+================================================== */
+
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.innerText = "✅ " + message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+
+/* ==================================================
+   CLOSE CART WHEN CLICKING OUTSIDE
+================================================== */
+
+document.getElementById("cartOverlay").addEventListener("click", function(event) {
+    if(event.target === this) {
+        closeCart();
+    }
+});
+
+/* ==================================================
+   KARNATAKA COLLEGE DATA
+================================================== */
+
+const karnatakaColleges = [
+    {
+        city: "Bengaluru",
+        colleges: [
+            "Acharya Institute of Technology", "A.P.S College of Engineering", "AMC Engineering College",
+            "Atria Institute of Technology", "Bengaluru Institute of Technology", "BMS College of Engineering",
+            "BMS Institute of Technology and Management", "Cambridge Institute of Technology",
+            "C.M.R. Institute of Technology", "City Engineering College", "Don Bosco Institute of Technology",
+            "East Point College of Engineering and Technology", "East West Institute of Technology",
+            "HKBK College of Engineering", "JSS Academy of Technical Education", "K.S. Institute of Technology",
+            "M.S. Engineering College", "Oxford College of Engineering", "R R Institute of Technology",
+            "R.L. Jalappa Institute of Technology", "RajaRajeswari College of Engineering",
+            "RNS Institute of Technology", "Sai Vidya Institute of Technology", "Sapthagiri College of Engineering",
+            "Sir M. Visvesvaraya Institute of Technology", "SJB Institute of Technology",
+            "Sri Krishna Institute of Technology", "Sri Venkateshwara College of Engineering",
+            "T. John Institute of Technology", "Vemana Institute of Technology", "Vijaya Vittala Institute of Technology",
+            "Vivekananda Institute of Technology", "Raja Rajeswari Medical College and Hospital",
+            "Raja Rajeswari Dental College and Hospital", "Raja Rajeswari College of Pharmacy",
+            "Raja Rajeswari Institute of Nursing Sciences", "Dayananda Sagar College of Engineering",
+            "PES University", "New Horizon College of Engineering", "REVA University",
+            "Nitte Meenakshi Institute of Technology", "MVJ College of Engineering",
+            "BNM Institute of Technology", "Global Academy of Technology"
+        ]
+    },
+    {
+        city: "Mysuru",
+        colleges: [
+            "Maharaja Institute of Technology Mysore", "GSSS Institute of Engineering and Technology for Women",
+            "JSS Science and Technology University", "University of Mysore",
+            "Sri Jayachamarajendra College of Engineering", "The National Institute of Engineering"
+        ]
+    },
+    {
+        city: "Mangaluru",
+        colleges: [
+            "Canara Engineering College", "Bearys Institute of Technology",
+            "Mangalore Institute of Technology and Engineering", "Sahyadri College of Engineering and Management",
+            "St. Joseph Engineering College", "Yenepoya Institute of Technology",
+            "NMAM Institute of Technology", "Srinivas Institute of Technology"
+        ]
+    },
+    {
+        city: "Belagavi",
+        colleges: [
+            "KLE Institute of Technology", "KLE College of Engineering and Technology",
+            "KLE Dr. M.S. Sheshgiri College of Engineering and Technology", "Maratha Mandal's Engineering College",
+            "S.G. Balekundri Institute of Technology", "Jain College of Engineering",
+            "Jain College of Engineering and Research"
+        ]
+    },
+    {
+        city: "Tumakuru",
+        colleges: [
+            "Channabasaveshwara Institute of Technology", "HMS Institute of Technology",
+            "Shridevi Institute of Engineering and Technology", "Siddaganga Institute of Technology"
+        ]
+    },
+    {
+        city: "Davanagere",
+        colleges: [
+            "Bapuji Institute of Engineering and Technology", "GM Institute of Technology",
+            "Jain Institute of Technology", "UBDT Engineering College"
+        ]
+    },
+    {
+        city: "Hassan",
+        colleges: [
+            "Government Engineering College Hassan", "Malnad College of Engineering",
+            "Navkis College of Engineering Hassan"
+        ]
+    },
+    {
+        city: "Shivamogga",
+        colleges: ["Jawaharlal Nehru National College of Engineering"]
+    },
+    {
+        city: "Mandya",
+        colleges: ["Government Engineering College Mandya", "PES College of Engineering"]
+    },
+    {
+        city: "Ballari",
+        colleges: ["Ballari Institute of Technology and Management"]
+    },
+    {
+        city: "Kalaburagi",
+        colleges: [
+            "Basavakalyan Engineering College", "Guru Nanak Dev Engineering College",
+            "K.C.T. Engineering College", "Khaja Banda Nawaz College of Engineering",
+            "Navodaya Institute of Technology", "Proudadevaraya Institute of Technology",
+            "SLN College of Engineering", "Veerappa Nisty Engineering College",
+            "Godutai Engineering College for Women"
+        ]
+    },
+    {
+        city: "Chamarajanagara",
+        colleges: ["Government Engineering College Chamarajanagara"]
+    },
+    {
+        city: "Kodagu",
+        colleges: ["Coorg Institute of Technology"]
+    },
+    {
+        city: "Hubballi-Dharwad",
+        colleges: ["KLE Technological University", "SDM College of Engineering and Technology"]
+    }
+];
+
+function loadCities() {
+    const citySelect = document.getElementById("collegeCity");
+    citySelect.innerHTML = `<option value="">Select Karnataka city</option>`;
+
+    karnatakaColleges
+        .sort((a, b) => a.city.localeCompare(b.city))
+        .forEach(location => {
+            const option = document.createElement("option");
+            option.value = location.city;
+            option.textContent = location.city;
+            citySelect.appendChild(option);
+        });
+}
+
+function loadColleges() {
+    const city = document.getElementById("collegeCity").value;
+    const collegeSelect = document.getElementById("collegeName");
+    collegeSelect.innerHTML = `<option value="">Select your college</option>`;
+
+    const location = karnatakaColleges.find(item => item.city === city);
+    if (!location) return;
+
+    location.colleges
+        .sort((a, b) => a.localeCompare(b))
+        .forEach(college => {
+            const option = document.createElement("option");
+            option.value = college;
+            option.textContent = college;
+            collegeSelect.appendChild(option);
+        });
+}
+
+function saveCollege() {
+    const college = document.getElementById("collegeName").value;
+    const city = document.getElementById("collegeCity").value;
+
+    selectedCollege = college;
+
+    const display = document.getElementById("selectedCollege");
+    const headerName = document.getElementById("headerCollegeName");
+    const footerName = document.getElementById("footerCollegeName");
+
+    if (college) {
+        display.style.display = "block";
+        display.innerHTML = `🎓 Selected College: ${college}, ${city}, Karnataka`;
+
+        headerName.innerText = college;
+        footerName.innerText = `© 2026 CampusBite | ${college}`;
+
+        localStorage.setItem("campusBiteCollege", college);
+        localStorage.setItem("campusBiteCity", city);
+    } else {
+        display.style.display = "none";
+        headerName.innerText = "Select Your College";
+        footerName.innerText = "© 2026 CampusBite";
+    }
+}
+
+/* ==================================================
+   INITIALIZATION & PERSISTENCE LOAD
+================================================== */
+
+loadCities();
+displayMenu();
+updateCart();
+
+const savedCity = localStorage.getItem("campusBiteCity");
+const savedCollege = localStorage.getItem("campusBiteCollege");
+
+if (savedCity) {
+    document.getElementById("collegeCity").value = savedCity;
+    loadColleges();
+    
+    if (savedCollege) {
+        document.getElementById("collegeName").value = savedCollege;
+        saveCollege();
+    }
+}
+
+</script>
+
+</body>
+</html>
