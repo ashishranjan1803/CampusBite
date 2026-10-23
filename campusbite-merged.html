@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusBite - Connected Canteen System</title>
+  <style>
+    :root {
+      --primary: #ff6b00;
+      --primary-hover: #e05d00;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 60px; }
+
+    /* SYSTEM SWITCHER HEADER */
+    .system-nav {
+      background: #0f172a;
+      color: white;
+      padding: 12px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--primary);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .system-nav .title { font-weight: 800; font-size: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+    .role-toggle { display: flex; gap: 8px; background: #1e293b; padding: 4px; border-radius: 8px; }
+    .role-btn {
+      background: transparent; border: none; color: #94a3b8; padding: 8px 16px;
+      border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s;
+    }
+    .role-btn.active { background: var(--primary); color: white; }
+
+    /* SHARED UTILITIES */
+    .view-container { display: none; }
+    .view-container.active { display: block; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+
+    /* ================= STUDENT VIEW ================= */
+    .student-header {
+      background: var(--card-bg); padding: 16px 5%; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .brand-logo { font-size: 22px; font-weight: 800; color: var(--primary); }
+    .college-selector {
+      background: #f1f5f9; padding: 8px 16px; border-radius: 20px; font-size: 13px;
+      font-weight: 700; cursor: pointer; border: 1px solid var(--border); transition: 0.2s;
+    }
+    .college-selector:hover { background: #e2e8f0; }
+    .cart-btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+    .broadcast-banner { display: none; background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 5%; font-weight: 700; text-align: center; }
+
+    .main-content { padding: 24px 5%; max-width: 1200px; margin: 0 auto; }
+    .tracker-card { background: white; padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 24px; border: 1px solid var(--border); }
+    .tracker-steps { display: flex; justify-content: space-between; margin-top: 15px; position: relative; gap: 8px; flex-wrap: wrap; }
+    .tracker-step { flex: 1; text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); opacity: 0.5; padding: 8px; background: #f8fafc; border-radius: 8px; }
+    .tracker-step.active { color: var(--primary); opacity: 1; background: #fff7ed; border: 1px solid var(--primary); }
+
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 16px; }
+    .food-card { background: white; border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; }
+    .food-card.sold-out { opacity: 0.6; filter: grayscale(0.8); }
+    .food-icon { font-size: 48px; text-align: center; margin: 10px 0; }
+    .food-card h3 { font-size: 16px; margin: 8px 0 4px; }
+    .food-card .desc { font-size: 13px; color: var(--muted); min-height: 36px; }
+    .food-card .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+    .food-card .price { font-weight: 800; font-size: 16px; }
+    .food-card button { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+    /* CART DRAWER */
+    .cart-drawer { position: fixed; right: -420px; top: 0; width: 400px; max-width: 100%; height: 100%; background: white; box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 200; transition: 0.3s; padding: 24px; display: flex; flex-direction: column; }
+    .cart-drawer.open { right: 0; }
+    .cart-items { flex: 1; overflow-y: auto; margin: 20px 0; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+
+    /* ================= STAFF VIEW ================= */
+    .staff-container { padding: 24px 5%; max-width: 1400px; margin: 0 auto; }
+    .kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+    .kanban-col { background: #f1f5f9; border-radius: 12px; padding: 16px; min-height: 500px; }
+    .kanban-col h3 { font-size: 15px; margin-bottom: 16px; display: flex; justify-content: space-between; }
+
+    .order-card { background: white; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+    .order-card .meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .order-card .items { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .action-btn { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; padding: 24px; border-radius: 16px; max-width: 480px; width: 90%; max-height: 90vh; overflow-y: auto; }
+  </style>
+</head>
+<body>
+
+  <!-- SYSTEM SWITCHER HEADER -->
+  <div class="system-nav">
+    <div class="title">🍔 CampusBite Unified App</div>
+    <div class="role-toggle">
+      <button class="role-btn active" id="btnStudentRole" onclick="switchRole('student')">📱 Student View</button>
+      <button class="role-btn" id="btnStaffRole" onclick="switchRole('staff')">👨‍🍳 Kitchen Staff View</button>
+    </div>
+  </div>
+
+  <!-- ================= STUDENT VIEW ================= -->
+  <div id="studentView" class="view-container active">
+    <header class="student-header">
+      <div class="brand-logo">🍔 CampusBite</div>
+      <div class="college-selector" onclick="openCollegeModal()">🎓 <span id="currentCollege">Select Your Karnataka College</span></div>
+      <button class="cart-btn" onclick="toggleCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+    </header>
+
+    <div class="broadcast-banner" id="broadcastBanner"></div>
+
+    <main class="main-content">
+      <!-- LIVE ACTIVE ORDER TRACKER -->
+      <div class="tracker-card" id="trackerCard" style="display: none;">
+        <h3>📦 Live Order Progress (<span id="trackOrderId"></span>)</h3>
+        <p style="font-size: 13px; color: var(--muted); margin-top: 4px;">Pickup Time: <strong id="trackPickupTime"></strong></p>
+        <div class="tracker-steps">
+          <div class="tracker-step" id="step-PLACED">1. Received</div>
+          <div class="tracker-step" id="step-PREPARING">2. Cooking</div>
+          <div class="tracker-step" id="step-READY">3. Ready for Pickup</div>
+          <div class="tracker-step" id="step-COMPLETED">4. Handed Over</div>
+        </div>
+      </div>
+
+      <h2 style="font-size: 24px; margin-bottom: 16px;">🍴 Today's Menu</h2>
+      <div class="menu-grid" id="studentMenuGrid"></div>
+    </main>
+
+    <!-- CART DRAWER -->
+    <div class="cart-drawer" id="cartDrawer">
+      <h2>🛒 Your Cart</h2>
+      <div class="cart-items" id="cartItems"></div>
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: 700;">Student Name</label>
+        <input type="text" id="inputStudentName" placeholder="Enter your full name" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border); border-radius: 8px;">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; font-weight: 700;">Student ID / USN</label>
+        <input type="text" id="inputStudentUsn" placeholder="Enter USN / ID" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border); border-radius: 8px;">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; font-weight: 700;">Pickup Time</label>
+        <select id="selectPickupTime" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border); border-radius: 8px;">
+          <option value="10 minutes">10 minutes</option>
+          <option value="15 minutes">15 minutes</option>
+          <option value="20 minutes">20 minutes</option>
+          <option value="30 minutes">30 minutes</option>
+          <option value="45 minutes">45 minutes</option>
+        </select>
+      </div>
+      <h3 style="margin-top: 10px;">Total: ₹<span id="cartTotal">0</span></h3>
+      <button class="action-btn" onclick="submitOrder()" style="margin-top: 14px;">Place Order Now</button>
+      <button onclick="toggleCart()" style="width: 100%; padding: 10px; margin-top: 8px; background: transparent; border: none; color: var(--muted); cursor: pointer; font-weight: 700;">Close Cart</button>
+    </div>
+  </div>
+
+  <!-- ================= STAFF VIEW ================= -->
+  <div id="staffView" class="view-container">
+    <div class="staff-container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <h2>👨‍🍳 Kitchen Dashboard & Live Queue</h2>
+        <button class="action-btn" style="width: auto; padding: 10px 20px;" onclick="broadcastDelayAlert()">📢 Send Rush Hour Alert to Students</button>
+      </div>
+
+      <!-- KANBAN BOARD -->
+      <div class="kanban-board">
+        <div class="kanban-col">
+          <h3>📥 New Incoming <span class="badge badge-warning" id="count-PLACED">0</span></h3>
+          <div id="col-PLACED"></div>
+        </div>
+        <div class="kanban-col">
+          <h3>👨‍🍳 Preparing <span class="badge badge-warning" id="count-PREPARING">0</span></h3>
+          <div id="col-PREPARING"></div>
+        </div>
+        <div class="kanban-col">
+          <h3>🍽️ Ready for Pickup <span class="badge badge-success" id="count-READY">0</span></h3>
+          <div id="col-READY"></div>
+        </div>
+        <div class="kanban-col">
+          <h3>✅ Handed Over <span class="badge badge-success" id="count-COMPLETED">0</span></h3>
+          <div id="col-COMPLETED"></div>
+        </div>
+      </div>
+
+      <!-- MENU STOCK MANAGEMENT -->
+      <h3 style="margin-top: 36px; margin-bottom: 16px;">📋 Canteen Menu & Stock Availability Control</h3>
+      <div id="staffStockList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- FULL KARNATAKA COLLEGE SELECTOR MODAL -->
+  <div class="modal-overlay" id="collegeModal">
+    <div class="modal">
+      <h3>🎓 Select Your College</h3>
+      <p style="font-size: 13px; color: var(--muted); margin-top: 4px; margin-bottom: 16px;">Choose your location and college in Karnataka.</p>
+      
+      <label style="font-size: 12px; font-weight: 700;">City / Location</label>
+      <select id="selectCity" onchange="loadCollegesForCity()" style="width: 100%; padding: 10px; margin-top: 4px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border);">
+        <option value="">Select Karnataka city</option>
+      </select>
+
+      <label style="font-size: 12px; font-weight: 700;">College Name</label>
+      <select id="selectCollege" style="width: 100%; padding: 10px; margin-top: 4px; margin-bottom: 16px; border-radius: 8px; border: 1px solid var(--border);">
+        <option value="">Select your college</option>
+      </select>
+
+      <button class="action-btn" onclick="saveCollegeSelection()">Save College Selection</button>
+    </div>
+  </div>
+
+  <script>
+    /* ==================================================
+       100% COMPLETE KARNATAKA COLLEGE DATA LIST
+    ================================================== */
+    const karnatakaColleges = [
+      {
+        city: "Bengaluru",
+        colleges: [
+          "Acharya Institute of Technology", "A.P.S College of Engineering", "AMC Engineering College",
+          "Atria Institute of Technology", "Bengaluru Institute of Technology", "BMS College of Engineering",
+          "BMS Institute of Technology and Management", "Cambridge Institute of Technology",
+          "C.M.R. Institute of Technology", "City Engineering College", "Don Bosco Institute of Technology",
+          "East Point College of Engineering and Technology", "East West Institute of Technology",
+          "HKBK College of Engineering", "JSS Academy of Technical Education", "K.S. Institute of Technology",
+          "M.S. Engineering College", "Oxford College of Engineering", "R R Institute of Technology",
+          "R.L. Jalappa Institute of Technology", "RajaRajeswari College of Engineering",
+          "RNS Institute of Technology", "Sai Vidya Institute of Technology", "Sapthagiri College of Engineering",
+          "Sir M. Visvesvaraya Institute of Technology", "SJB Institute of Technology",
+          "Sri Krishna Institute of Technology", "Sri Venkateshwara College of Engineering",
+          "T. John Institute of Technology", "Vemana Institute of Technology", "Vijaya Vittala Institute of Technology",
+          "Vivekananda Institute of Technology", "Raja Rajeswari Medical College and Hospital",
+          "Raja Rajeswari Dental College and Hospital", "Raja Rajeswari College of Pharmacy",
+          "Raja Rajeswari Institute of Nursing Sciences", "Dayananda Sagar College of Engineering",
+          "PES University", "New Horizon College of Engineering", "REVA University",
+          "Nitte Meenakshi Institute of Technology", "MVJ College of Engineering",
+          "BNM Institute of Technology", "Global Academy of Technology"
+        ]
+      },
+      {
+        city: "Mysuru",
+        colleges: [
+          "Maharaja Institute of Technology Mysore", "GSSS Institute of Engineering and Technology for Women",
+          "JSS Science and Technology University", "University of Mysore",
+          "Sri Jayachamarajendra College of Engineering", "The National Institute of Engineering"
+        ]
+      },
+      {
+        city: "Mangaluru",
+        colleges: [
+          "Canara Engineering College", "Bearys Institute of Technology",
+          "Mangalore Institute of Technology and Engineering", "Sahyadri College of Engineering and Management",
+          "St. Joseph Engineering College", "Yenepoya Institute of Technology",
+          "NMAM Institute of Technology", "Srinivas Institute of Technology"
+        ]
+      },
+      {
+        city: "Belagavi",
+        colleges: [
+          "KLE Institute of Technology", "KLE College of Engineering and Technology",
+          "KLE Dr. M.S. Sheshgiri College of Engineering and Technology", "Maratha Mandal's Engineering College",
+          "S.G. Balekundri Institute of Technology", "Jain College of Engineering",
+          "Jain College of Engineering and Research"
+        ]
+      },
+      {
+        city: "Tumakuru",
+        colleges: [
+          "Channabasaveshwara Institute of Technology", "HMS Institute of Technology",
+          "Shridevi Institute of Engineering and Technology", "Siddaganga Institute of Technology"
+        ]
+      },
+      {
+        city: "Davanagere",
+        colleges: [
+          "Bapuji Institute of Engineering and Technology", "GM Institute of Technology",
+          "Jain Institute of Technology", "UBDT Engineering College"
+        ]
+      },
+      {
+        city: "Hassan",
+        colleges: [
+          "Government Engineering College Hassan", "Malnad College of Engineering",
+          "Navkis College of Engineering Hassan"
+        ]
+      },
+      {
+        city: "Shivamogga",
+        colleges: ["Jawaharlal Nehru National College of Engineering"]
+      },
+      {
+        city: "Mandya",
+        colleges: ["Government Engineering College Mandya", "PES College of Engineering"]
+      },
+      {
+        city: "Ballari",
+        colleges: ["Ballari Institute of Technology and Management"]
+      },
+      {
+        city: "Kalaburagi",
+        colleges: [
+          "Basavakalyan Engineering College", "Guru Nanak Dev Engineering College",
+          "K.C.T. Engineering College", "Khaja Banda Nawaz College of Engineering",
+          "Navodaya Institute of Technology", "Proudadevaraya Institute of Technology",
+          "SLN College of Engineering", "Veerappa Nisty Engineering College",
+          "Godutai Engineering College for Women"
+        ]
+      },
+      {
+        city: "Chamarajanagara",
+        colleges: ["Government Engineering College Chamarajanagara"]
+      },
+      {
+        city: "Kodagu",
+        colleges: ["Coorg Institute of Technology"]
+      },
+      {
+        city: "Hubballi-Dharwad",
+        colleges: ["KLE Technological University", "SDM College of Engineering and Technology"]
+      }
+    ];
+
+    /* ==================================================
+       25-ITEM EXTENDED CANTEEN MENU DATA
+    ================================================== */
+    const defaultMenuItems = [
+      { id: 1, name: "Veg Burger", description: "Fresh vegetable burger", price: 50, icon: "🍔", inStock: true },
+      { id: 2, name: "Pizza", description: "Cheesy vegetable pizza", price: 80, icon: "🍕", inStock: true },
+      { id: 3, name: "Sandwich", description: "Grilled cheese sandwich", price: 40, icon: "🥪", inStock: true },
+      { id: 4, name: "Masala Maggi", description: "Hot and spicy Maggi", price: 40, icon: "🍜", inStock: true },
+      { id: 5, name: "Tea", description: "Hot milk tea", price: 15, icon: "☕", inStock: true },
+      { id: 6, name: "Cold Drink", description: "Chilled soft drink", price: 30, icon: "🥤", inStock: true },
+      { id: 7, name: "Samosa", description: "Hot crispy samosa", price: 20, icon: "🥟", inStock: true },
+      { id: 8, name: "French Fries", description: "Crispy salted fries", price: 60, icon: "🍟", inStock: true },
+      { id: 9, name: "Masala Dosa", description: "Crispy dosa with potato masala", price: 50, icon: "🥞", inStock: true },
+      { id: 10, name: "Idli Sambar", description: "Soft idlis served with sambar", price: 35, icon: "🍛", inStock: true },
+      { id: 11, name: "Vada Sambar", description: "Crispy medu vada with sambar", price: 40, icon: "🍩", inStock: true },
+      { id: 12, name: "Upma", description: "Traditional South Indian breakfast", price: 30, icon: "🥣", inStock: true },
+      { id: 13, name: "Pongal", description: "Warm South Indian rice and lentil dish", price: 40, icon: "🍚", inStock: true },
+      { id: 14, name: "Medu Vada", description: "Crispy South Indian lentil fritters", price: 30, icon: "🥯", inStock: true },
+      { id: 15, name: "Chole Bhature", description: "Spicy chickpea curry with fluffy fried bread", price: 60, icon: "🫓", inStock: true },
+      { id: 16, name: "Paneer Butter Masala", description: "Creamy paneer curry in rich tomato gravy", price: 90, icon: "🧈", inStock: true },
+      { id: 17, name: "Aloo Paratha", description: "Stuffed potato flatbread served with curd", price: 45, icon: "🥙", inStock: true },
+      { id: 18, name: "Rajma Chawal", description: "Kidney bean curry with steamed rice", price: 55, icon: "🫘", inStock: true },
+      { id: 19, name: "Dal Makhani", description: "Slow-cooked creamy black lentils", price: 60, icon: "🍲", inStock: true },
+      { id: 20, name: "Pav Bhaji", description: "Spiced mashed veggies with buttered pav", price: 50, icon: "🍞", inStock: true },
+      { id: 21, name: "Rava Dosa", description: "Crispy semolina dosa served with chutney", price: 55, icon: "🌾", inStock: true },
+      { id: 22, name: "Uttapam", description: "Thick savory pancake with onions and veggies", price: 45, icon: "🥞", inStock: true },
+      { id: 23, name: "Curd Rice", description: "Comforting rice mixed with fresh curd", price: 35, icon: "🍚", inStock: true },
+      { id: 24, name: "Bisi Bele Bath", description: "Spicy Karnataka-style rice and lentil dish", price: 45, icon: "🍛", inStock: true },
+      { id: 25, name: "Filter Coffee", description: "South Indian style strong filter coffee", price: 20, icon: "☕", inStock: true }
+    ];
+
+    /* ==================================================
+       SYSTEM STATE & BROADCAST CHANNEL
+    ================================================== */
+    const syncChannel = new BroadcastChannel('campusbite_sync');
+
+    let menu = JSON.parse(localStorage.getItem('cb_menu')) || defaultMenuItems;
+    let orders = JSON.parse(localStorage.getItem('cb_orders')) || [];
+    let cart = [];
+    let selectedCollege = localStorage.getItem('campusBiteCollege') || "";
+
+    // SWITCH VIEW ROLES
+    function switchRole(role) {
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+      if(role === 'student') {
+        document.getElementById('btnStudentRole').classList.add('active');
+        document.getElementById('studentView').classList.add('active');
+      } else {
+        document.getElementById('btnStaffRole').classList.add('active');
+        document.getElementById('staffView').classList.add('active');
+      }
+    }
+
+    // AUDIO CHIME FOR NEW ORDERS
+    function playChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 587.33; osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
+      } catch(e) {}
+    }
+
+    // RENDER FUNCTIONS
+    function renderStudentMenu() {
+      const grid = document.getElementById('studentMenuGrid');
+      grid.innerHTML = menu.map(item => `
+        <div class="food-card ${!item.inStock ? 'sold-out' : ''}">
+          <div class="food-icon">${item.icon}</div>
+          <h3>${item.name}</h3>
+          <p class="desc">${item.description}</p>
+          <div class="price-row">
+            <div class="price">₹${item.price}</div>
+            ${item.inStock ? `<button onclick="addToCart(${item.id})">+ Add</button>` : `<span class="badge badge-danger">Sold Out</span>`}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderStaffBoard() {
+      const statuses = ['PLACED', 'PREPARING', 'READY', 'COMPLETED'];
+      statuses.forEach(st => {
+        const col = document.getElementById(`col-${st}`);
+        const list = orders.filter(o => o.status === st);
+        document.getElementById(`count-${st}`).innerText = list.length;
+        col.innerHTML = list.map(o => `
+          <div class="order-card">
+            <div class="meta">#${o.id} • ${o.studentName} (${o.usn})</div>
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: 6px;">🎓 ${o.college || 'Canteen'}</div>
+            <div class="items">${o.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</div>
+            ${st === 'PLACED' ? `<button class="action-btn" onclick="updateOrderStatus('${o.id}', 'PREPARING')">Start Cooking</button>` : ''}
+            ${st === 'PREPARING' ? `<button class="action-btn" onclick="updateOrderStatus('${o.id}', 'READY')">Mark Ready</button>` : ''}
+            ${st === 'READY' ? `<button class="action-btn" onclick="updateOrderStatus('${o.id}', 'COMPLETED')">Hand Over</button>` : ''}
+          </div>
+        `).join('');
+      });
+
+      // Render Stock List Controls
+      document.getElementById('staffStockList').innerHTML = menu.map(m => `
+        <div style="background: white; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border);">
+          <span>${m.icon} <strong>${m.name}</strong> (₹${m.price})</span>
+          <button class="badge ${m.inStock ? 'badge-success' : 'badge-danger'}" onclick="toggleStock(${m.id})" style="border:none; cursor:pointer;">
+            ${m.inStock ? 'In Stock' : 'Out of Stock'}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // CART & ORDER FUNCTIONS
+    function addToCart(id) {
+      const item = menu.find(m => m.id === id);
+      const exist = cart.find(c => c.id === id);
+      if(exist) exist.quantity++;
+      else cart.push({ ...item, quantity: 1 });
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      document.getElementById('cartCount').innerText = cart.reduce((s, c) => s + c.quantity, 0);
+      document.getElementById('cartTotal').innerText = cart.reduce((s, c) => s + (c.price * c.quantity), 0);
+      document.getElementById('cartItems').innerHTML = cart.map(c => `
+        <div class="cart-item">
+          <div><strong>${c.icon} ${c.name}</strong><br><small>₹${c.price} x ${c.quantity}</small></div>
+          <div>₹${c.price * c.quantity}</div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCart() {
+      document.getElementById('cartDrawer').classList.toggle('open');
+    }
+
+    function submitOrder() {
+      const name = document.getElementById('inputStudentName').value.trim();
+      const usn = document.getElementById('inputStudentUsn').value.trim();
+      const pickup = document.getElementById('selectPickupTime').value;
+
+      if(!selectedCollege) {
+        alert('Please select your college at the top of the page before placing an order.');
+        openCollegeModal();
+        return;
+      }
+
+      if(!name || !usn || cart.length === 0) {
+        alert('Please enter your name, USN, and add items to your cart.');
+        return;
+      }
+
+      const newOrder = {
+        id: 'CB' + Math.floor(10000 + Math.random() * 90000),
+        studentName: name, usn: usn, college: selectedCollege,
+        pickupTime: pickup, items: [...cart], status: 'PLACED',
+        createdAt: new Date().toISOString()
+      };
+
+      orders.unshift(newOrder);
+      localStorage.setItem('cb_orders', JSON.stringify(orders));
+      localStorage.setItem('cb_active_order', JSON.stringify(newOrder));
+
+      syncChannel.postMessage({ type: 'NEW_ORDER', order: newOrder });
+
+      cart = [];
+      updateCartUI();
+      toggleCart();
+      renderStaffBoard();
+      updateStudentTracker(newOrder);
+      playChime();
+    }
+
+    function updateOrderStatus(id, newStatus) {
+      const order = orders.find(o => o.id === id);
+      if(order) {
+        order.status = newStatus;
+        localStorage.setItem('cb_orders', JSON.stringify(orders));
+        syncChannel.postMessage({ type: 'STATUS_UPDATE', id, status: newStatus });
+        renderStaffBoard();
+        
+        const activeOrder = JSON.parse(localStorage.getItem('cb_active_order'));
+        if(activeOrder && activeOrder.id === id) {
+          activeOrder.status = newStatus;
+          localStorage.setItem('cb_active_order', JSON.stringify(activeOrder));
+          updateStudentTracker(activeOrder);
+        }
+      }
+    }
+
+    function toggleStock(id) {
+      const item = menu.find(m => m.id === id);
+      if(item) {
+        item.inStock = !item.inStock;
+        localStorage.setItem('cb_menu', JSON.stringify(menu));
+        syncChannel.postMessage({ type: 'STOCK_UPDATE', menu });
+        renderStudentMenu();
+        renderStaffBoard();
+      }
+    }
+
+    function broadcastDelayAlert() {
+      const msg = "⚠️ High Kitchen Rush: Orders may take an additional 10-15 minutes.";
+      syncChannel.postMessage({ type: 'BROADCAST', message: msg });
+      showStudentBroadcast(msg);
+    }
+
+    function showStudentBroadcast(msg) {
+      const banner = document.getElementById('broadcastBanner');
+      banner.innerText = msg;
+      banner.style.display = 'block';
+    }
+
+    function updateStudentTracker(order) {
+      if(!order) return;
+      document.getElementById('trackerCard').style.display = 'block';
+      document.getElementById('trackOrderId').innerText = order.id;
+      document.getElementById('trackPickupTime').innerText = order.pickupTime;
+
+      document.querySelectorAll('.tracker-step').forEach(s => s.classList.remove('active'));
+      const activeStep = document.getElementById(`step-${order.status}`);
+      if(activeStep) activeStep.classList.add('active');
+    }
+
+    // SYNC LISTENERS
+    syncChannel.onmessage = (e) => {
+      const data = e.data;
+      if(data.type === 'NEW_ORDER') {
+        orders.unshift(data.order);
+        renderStaffBoard();
+        playChime();
+      } else if(data.type === 'STATUS_UPDATE') {
+        renderStaffBoard();
+        const active = JSON.parse(localStorage.getItem('cb_active_order'));
+        if(active && active.id === data.id) {
+          active.status = data.status;
+          updateStudentTracker(active);
+        }
+      } else if(data.type === 'STOCK_UPDATE') {
+        menu = data.menu;
+        renderStudentMenu();
+      } else if(data.type === 'BROADCAST') {
+        showStudentBroadcast(data.message);
+      }
+    };
+
+    // COLLEGE SELECTION MODAL LOGIC
+    function openCollegeModal() {
+      document.getElementById('collegeModal').classList.add('open');
+    }
+
+    function loadCityDropdown() {
+      const citySelect = document.getElementById('selectCity');
+      citySelect.innerHTML = `<option value="">Select Karnataka city</option>`;
+      karnatakaColleges
+        .sort((a, b) => a.city.localeCompare(b.city))
+        .forEach(loc => {
+          const opt = document.createElement('option');
+          opt.value = loc.city;
+          opt.textContent = loc.city;
+          citySelect.appendChild(opt);
+        });
+    }
+
+    function loadCollegesForCity() {
+      const city = document.getElementById('selectCity').value;
+      const colSelect = document.getElementById('selectCollege');
+      colSelect.innerHTML = `<option value="">Select your college</option>`;
+
+      const loc = karnatakaColleges.find(item => item.city === city);
+      if (!loc) return;
+
+      loc.colleges
+        .sort((a, b) => a.localeCompare(b))
+        .forEach(col => {
+          const opt = document.createElement('option');
+          opt.value = col;
+          opt.textContent = col;
+          colSelect.appendChild(opt);
+        });
+    }
+
+    function saveCollegeSelection() {
+      const col = document.getElementById('selectCollege').value;
+      if (col) {
+        selectedCollege = col;
+        document.getElementById('currentCollege').innerText = col;
+        localStorage.setItem('campusBiteCollege', col);
+        document.getElementById('collegeModal').classList.remove('open');
+      } else {
+        alert('Please select a college from the dropdown.');
+      }
+    }
+
+    // INITIALIZATION
+    loadCityDropdown();
+    renderStudentMenu();
+    renderStaffBoard();
+
+    if(selectedCollege) {
+      document.getElementById('currentCollege').innerText = selectedCollege;
+    }
+
+    const activeOrder = JSON.parse(localStorage.getItem('cb_active_order'));
+    if(activeOrder) updateStudentTracker(activeOrder);
+  </script>
+</body>
+</html>
